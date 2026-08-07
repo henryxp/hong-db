@@ -1,7 +1,10 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Globe, ArrowRight, Camera, Send, CheckCircle2 } from 'lucide-react'
+import { Globe, Camera, Send, CheckCircle2 } from 'lucide-react'
 import LoginDialog from './LoginDialog'
+import TrendingSearch from './TrendingSearch'
+
+const LOGIN_STORAGE_KEY = 'hong-db-logged-in'
 
 const HERO_VIDEO_URL =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260405_074625_a81f018a-956b-43fb-9aee-4d1508e30e6a.mp4'
@@ -31,6 +34,16 @@ export default function Index() {
   const fadingOut = useRef(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [toastVisible, setToastVisible] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Restore login state from localStorage on mount
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(LOGIN_STORAGE_KEY) === '1') setIsLoggedIn(true)
+    } catch {
+      // localStorage may be unavailable (private mode, etc.) — fail open as logged-out
+    }
+  }, [])
 
   const handleCanPlay = useCallback(() => {
     const vid = videoRef.current
@@ -90,7 +103,7 @@ export default function Index() {
         <div className="liquid-glass rounded-full max-w-5xl mx-auto px-6 py-3 flex items-center gap-2">
           {/* Left */}
           <div className="flex items-center gap-2">
-            <img src="/logo_small.png" alt="Hong-DB logo" className="h-10 w-auto flex-shrink-0" />
+            <img src="./logo_small.png" alt="Hong-DB logo" className="h-10 w-auto flex-shrink-0" />
             <span className="text-white font-semibold text-lg">Hong-DB</span>
             <div className="hidden md:flex items-center gap-8 ml-8">
               <a href="#" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
@@ -126,19 +139,8 @@ export default function Index() {
           Know it then <em className="italic">all</em>.
         </h1>
 
-        {/* Email Input */}
-        <div className="max-w-xl w-full mt-10">
-          <div className="liquid-glass rounded-full pl-6 pr-2 py-2 flex items-center gap-3">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-sm"
-            />
-            <button className="bg-white rounded-full p-3 text-black flex-shrink-0 cursor-pointer hover:bg-white/90 transition-colors">
-              <ArrowRight size={20} />
-            </button>
-          </div>
-        </div>
+        {/* Trending Search */}
+        <TrendingSearch isLoggedIn={isLoggedIn} onRequestLogin={() => setLoginOpen(true)} />
 
         {/* Subtitle */}
         <p className="text-white text-sm leading-relaxed px-4 mt-5 max-w-lg">
@@ -170,6 +172,12 @@ export default function Index() {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onSuccess={() => {
+          setIsLoggedIn(true)
+          try {
+            localStorage.setItem(LOGIN_STORAGE_KEY, '1')
+          } catch {
+            // ignore — non-essential persistence
+          }
           setToastVisible(true)
           setTimeout(() => setToastVisible(false), 2400)
         }}
