@@ -194,7 +194,7 @@ export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingS
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.14, ease: 'easeOut' }}
-              className="absolute z-30 left-0 right-0 mt-2 liquid-glass rounded-2xl p-1.5 max-h-64 overflow-auto"
+              className="absolute z-30 left-0 right-0 mt-2 liquid-glass rounded-2xl p-1.5 max-h-64 overflow-auto bg-black/70 backdrop-blur-md"
             >
               {PLATFORMS.map((p) => {
                 const active = p.key === platform
