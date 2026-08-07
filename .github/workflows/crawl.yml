@@ -1,0 +1,50 @@
+name: Crawl trending data
+
+# Refresh the hot-list snapshots stored under data/<source>/YYYY-MM-DD.json,
+# which the React app reads via jsDelivr. Runs every 6 hours UTC (4 runs per
+# day is enough for trending topics) and can be triggered manually for
+# debugging.
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+# Allow the bot to push the refreshed data back to the repo.
+permissions:
+  contents: write
+
+# Queue runs in this group so a manual trigger and a scheduled run don't
+# both push at the same time and conflict. Cancel-in-progress is left off
+# intentionally: a queued run will simply commit whatever changed and exit.
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Run crawler
+        run: node scripts/crawl.mjs
+
+      - name: Commit and push refreshed snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          # `--quiet` exits 1 when there are no staged changes; in that case
+          # skip the commit and the push.
+          if git diff --cached --quiet; then
+            echo "no data changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(data): refresh trending snapshots $(date -u +%Y-%m-%d)"
+          git push

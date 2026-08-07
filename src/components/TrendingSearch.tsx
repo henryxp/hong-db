@@ -10,7 +10,13 @@ import {
   AlertCircle,
 } from 'lucide-react'
 
-type PlatformKey = 'toutiao' | 'zhihu-search' | 'zhihu-questions' | 'zhihu-video' | 'weibo'
+type PlatformKey =
+  | 'toutiao'
+  | 'zhihu-search'
+  | 'zhihu-questions'
+  | 'zhihu-video'
+  | 'weibo'
+  | 'bilibili'
 
 const PLATFORMS: { key: PlatformKey; label: string; path: string }[] = [
   { key: 'toutiao', label: '今日头条热搜', path: 'toutiao-search' },
@@ -18,13 +24,12 @@ const PLATFORMS: { key: PlatformKey; label: string; path: string }[] = [
   { key: 'zhihu-questions', label: '知乎热门话题', path: 'zhihu-questions' },
   { key: 'zhihu-video', label: '知乎热门视频', path: 'zhihu-video' },
   { key: 'weibo', label: '微博热搜', path: 'weibo-search' },
+  { key: 'bilibili', label: 'B站热门', path: 'bilibili' },
 ]
 
-const CDN_BASE = 'https://cdn.jsdelivr.net/gh/hu-qi/trending-in-one/raw'
-
-// The upstream repo was archived on 2025-04-24, so no data exists past this date.
-// We clamp the date picker to it so the default search actually returns results.
-const ARCHIVE_DATE = '2025-04-24'
+// Snapshots are committed under data/<platform>/YYYY-MM-DD.json by
+// .github/workflows/crawl.yml, then served via jsDelivr from this repo.
+const CDN_BASE = 'https://cdn.jsdelivr.net/gh/henryxp/hong-db@main'
 
 // Each platform's JSON array uses a different field for the display title.
 // Normalize to a single (title, link) pair so the table renders uniformly.
@@ -52,15 +57,8 @@ function toYmd(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
-function yesterdayYmd(): string {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return toYmd(d)
-}
-
-function clampToArchive(ymd: string): string {
-  // Past dates are always allowed (historical data exists), only future-of-archive is clamped.
-  return ymd > ARCHIVE_DATE ? ARCHIVE_DATE : ymd
+function todayYmd(): string {
+  return toYmd(new Date())
 }
 
 interface TrendingSearchProps {
@@ -72,7 +70,7 @@ type FetchStatus = 'idle' | 'loading' | 'success' | 'error'
 
 export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingSearchProps) {
   const [platform, setPlatform] = useState<PlatformKey>('toutiao')
-  const [date, setDate] = useState<string>(() => clampToArchive(yesterdayYmd()))
+  const [date, setDate] = useState<string>(todayYmd)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [resultsOpen, setResultsOpen] = useState(false)
   const [fetchStatus, setFetchStatus] = useState<FetchStatus>('idle')
@@ -134,22 +132,43 @@ export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingS
     setErrorMsg('')
     setItems([])
 
-    const url = `${CDN_BASE}/${platformPath}/${date}.json`
-    try {
-      const res = await fetch(url)
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText}`)
-      }
-      const data = await res.json()
-      if (!Array.isArray(data)) {
-        throw new Error('返回数据格式不是数组')
-      }
-      setItems(data as RawItem[])
-      setFetchStatus('success')
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : '获取数据失败')
-      setFetchStatus('error')
+    // Try the picked date first; if it returns 404, walk back one day at a
+    // time (up to a few days) so the user gets the freshest snapshot that
+    // actually exists for the current run window.
+    const candidates: string[] = [date]
+    const start = new Date(date)
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date(start)
+      d.setDate(d.getDate() - i)
+      candidates.push(toYmd(d))
     }
+
+    let lastError = ''
+    for (const tryDate of candidates) {
+      const url = `${CDN_BASE}/data/${platformPath}/${tryDate}.json`
+      try {
+        const res = await fetch(url)
+        if (res.status === 404) {
+          lastError = `${tryDate}: 无数据`
+          continue
+        }
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} ${res.statusText}`)
+        }
+        const data = await res.json()
+        if (!Array.isArray(data)) {
+          throw new Error('返回数据格式不是数组')
+        }
+        setItems(data as RawItem[])
+        setFetchStatus('success')
+        if (tryDate !== date) setDate(tryDate)
+        return
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : '获取数据失败'
+      }
+    }
+    setErrorMsg(lastError || '获取数据失败')
+    setFetchStatus('error')
   }
 
   const handleDateWrapperClick = () => {
@@ -235,8 +254,8 @@ export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingS
             ref={dateInputRef}
             type="date"
             value={date}
-            onChange={(e) => setDate(clampToArchive(e.target.value))}
-            max={clampToArchive(toYmd(new Date()))}
+            onChange={(e) => setDate(e.target.value)}
+            max={toYmd(new Date())}
             className="absolute opacity-0 pointer-events-none w-0 h-0"
             tabIndex={-1}
             aria-hidden
@@ -313,7 +332,7 @@ export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingS
                     <AlertCircle size={22} className="text-red-400" />
                     <p className="text-red-400 text-sm">获取失败：{errorMsg}</p>
                     <p className="text-white/40 text-xs">
-                      trending-in-one 仓库已于 2025-04-24 归档,该日期之后无数据,请选择 2025-04-24 或更早的日期
+                      数据每 6 小时由 GitHub Actions 抓取并提交,如刚部署请等待 workflow 首次跑完
                     </p>
                   </div>
                 )}
