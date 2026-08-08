@@ -1,0 +1,42 @@
+{
+  "updatedAt": "2026-08-08T04:58:36.117Z",
+  "date": "2026-08-08",
+  "sources": {
+    "zhihu-video": {
+      "ok": false,
+      "error": "HTTP 403 Forbidden",
+      "label": "知乎热门视频",
+      "ms": 668
+    },
+    "zhihu-search": {
+      "ok": false,
+      "error": "HTTP 403 Forbidden",
+      "label": "知乎热搜榜",
+      "ms": 673
+    },
+    "zhihu-questions": {
+      "ok": false,
+      "error": "HTTP 403 Forbidden",
+      "label": "知乎热门话题",
+      "ms": 709
+    },
+    "weibo-search": {
+      "ok": true,
+      "count": 52,
+      "label": "微博热搜",
+      "ms": 1062
+    },
+    "bilibili": {
+      "ok": true,
+      "count": 100,
+      "label": "B站热门",
+      "ms": 1118
+    },
+    "toutiao-search": {
+      "ok": true,
+      "count": 50,
+      "label": "今日头条热搜",
+      "ms": 1616
+    }
+  }
+}
