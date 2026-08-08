@@ -188,20 +188,26 @@ async function crawlToutiao() {
   }))
 }
 
-// ---------- source: B站热门 -------------------------------------------------
+// ---------- source: B站热搜 -------------------------------------------------
+
+// The ranking endpoint (`x/web-interface/ranking/v2`) returns `code=-352`
+// from GitHub Actions' shared IP range. The `search/square` endpoint is
+// public and not gated, returning the 热搜 (search-trending) word list.
+const BILIBILI_HOT_URL =
+  'https://api.bilibili.com/x/web-interface/search/square?limit=50'
 
 async function crawlBilibili() {
-  const data = await fetchJson(
-    'https://api.bilibili.com/x/web-interface/ranking/v2?rid=0&type=all',
-    { Referer: 'https://www.bilibili.com/' },
-  )
+  const data = await fetchJson(BILIBILI_HOT_URL, {
+    'User-Agent': MOBILE_UA,
+    Referer: 'https://www.bilibili.com/',
+  })
   if (data?.code !== 0) throw new Error(`bilibili: code=${data?.code} ${data?.message || ''}`)
-  const items = data?.data?.list ?? []
+  const items = data?.data?.trending?.list ?? []
   return items.map((it) => ({
-    title: it.title || '',
-    url: it.short_link || (it.bvid ? `https://www.bilibili.com/video/${it.bvid}` : ''),
-    hot: typeof it.stat?.view === 'number' ? it.stat.view : undefined,
-    desc: it.tname || '',
+    title: it.show_name || it.keyword || '',
+    url: `https://search.bilibili.com/all?keyword=${encodeURIComponent(it.keyword || '')}`,
+    hot: typeof it.heat_score === 'number' ? it.heat_score : undefined,
+    desc: '',
   }))
 }
 
@@ -213,7 +219,7 @@ const SOURCES = [
   { key: 'zhihu-questions', label: '知乎热门话题', crawl: crawlZhihuQuestions },
   { key: 'zhihu-video', label: '知乎热门视频', crawl: crawlZhihuVideo },
   { key: 'toutiao-search', label: '今日头条热搜', crawl: crawlToutiao },
-  { key: 'bilibili', label: 'B站热门', crawl: crawlBilibili },
+  { key: 'bilibili', label: 'B站热搜', crawl: crawlBilibili },
 ]
 
 // ---------- main ------------------------------------------------------------

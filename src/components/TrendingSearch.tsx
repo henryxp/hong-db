@@ -24,7 +24,7 @@ const PLATFORMS: { key: PlatformKey; label: string; path: string }[] = [
   { key: 'zhihu-questions', label: '知乎热门话题', path: 'zhihu-questions' },
   { key: 'zhihu-video', label: '知乎热门视频', path: 'zhihu-video' },
   { key: 'weibo', label: '微博热搜', path: 'weibo-search' },
-  { key: 'bilibili', label: 'B站热门', path: 'bilibili' },
+  { key: 'bilibili', label: 'B站热搜', path: 'bilibili' },
 ]
 
 // Snapshots are committed under data/<platform>/YYYY-MM-DD.json by
