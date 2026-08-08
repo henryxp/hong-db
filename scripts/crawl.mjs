@@ -92,11 +92,20 @@ async function crawlWeibo() {
 
 // ---------- source: 知乎 (search / questions / video) ------------------------
 
+// The desktop-UA API request gets a 403 from the GitHub Actions IP range.
+// Switching to a mobile UA returns 200 with the same payload shape, so the
+// downstream `zhihuItemToRecord` normaliser is unchanged.
+const MOBILE_UA =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+
 const ZHIHU_HOT_URL =
   'https://api.zhihu.com/topstory/hot-lists/total?limit=50'
 
 async function fetchZhihuHot() {
-  return fetchJson(ZHIHU_HOT_URL, { Referer: 'https://www.zhihu.com/' })
+  return fetchJson(ZHIHU_HOT_URL, {
+    'User-Agent': MOBILE_UA,
+    Referer: 'https://www.zhihu.com/',
+  })
 }
 
 function zhihuItemToRecord(item) {
