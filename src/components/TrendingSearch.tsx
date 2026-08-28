@@ -132,24 +132,27 @@ export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingS
     setErrorMsg('')
     setItems([])
 
-    // Try the picked date first; if it returns 404, walk back one day at a
-    // time (up to a few days) so the user gets the freshest snapshot that
-    // actually exists for the current run window.
+    // Try the picked date first; if it returns 404, walk back up to
+    // FALLBACK_DAYS days so the user gets the freshest snapshot that
+    // actually exists for the current run window. A 7-day window
+    // tolerates a missed crawl run without breaking the UI.
+    const FALLBACK_DAYS = 7
     const candidates: string[] = [date]
     const start = new Date(date)
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= FALLBACK_DAYS; i++) {
       const d = new Date(start)
       d.setDate(d.getDate() - i)
       candidates.push(toYmd(d))
     }
 
     let lastError = ''
+    const failedDates: string[] = []
     for (const tryDate of candidates) {
       const url = `${CDN_BASE}/data/${platformPath}/${tryDate}.json`
       try {
         const res = await fetch(url)
         if (res.status === 404) {
-          lastError = `${tryDate}: 无数据`
+          failedDates.push(tryDate)
           continue
         }
         if (!res.ok) {
@@ -167,7 +170,16 @@ export default function TrendingSearch({ isLoggedIn, onRequestLogin }: TrendingS
         lastError = err instanceof Error ? err.message : '获取数据失败'
       }
     }
-    setErrorMsg(lastError || '获取数据失败')
+    // If every candidate returned 404 the cause is a data-availability
+    // gap, not a transient failure — say so explicitly and list the
+    // dates that were tried so the user can pick a known-good one.
+    if (failedDates.length === candidates.length) {
+      setErrorMsg(
+        `未找到 ${candidates[0]} 及其前 ${FALLBACK_DAYS} 天的快照（已尝试 ${candidates.join(', ')}），请选择更近的日期`,
+      )
+    } else {
+      setErrorMsg(lastError || '获取数据失败')
+    }
     setFetchStatus('error')
   }
 
