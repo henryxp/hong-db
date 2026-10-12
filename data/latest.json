@@ -1,42 +1,42 @@
 {
-  "updatedAt": "2026-10-11T21:43:05.949Z",
-  "date": "2026-10-11",
+  "updatedAt": "2026-10-12T05:27:51.953Z",
+  "date": "2026-10-12",
   "sources": {
-    "zhihu-search": {
-      "ok": true,
-      "count": 30,
-      "label": "知乎热搜榜",
-      "ms": 736
-    },
-    "zhihu-questions": {
-      "ok": true,
-      "count": 30,
-      "label": "知乎热门话题",
-      "ms": 746
-    },
-    "zhihu-video": {
-      "ok": true,
-      "count": 3,
-      "label": "知乎热门视频",
-      "ms": 745
-    },
     "bilibili": {
       "ok": true,
       "count": 50,
       "label": "B站热搜",
-      "ms": 799
-    },
-    "weibo-search": {
-      "ok": true,
-      "count": 51,
-      "label": "微博热搜",
-      "ms": 1016
+      "ms": 772
     },
     "toutiao-search": {
       "ok": true,
       "count": 50,
       "label": "今日头条热搜",
-      "ms": 1099
+      "ms": 842
+    },
+    "weibo-search": {
+      "ok": true,
+      "count": 52,
+      "label": "微博热搜",
+      "ms": 908
+    },
+    "zhihu-video": {
+      "ok": true,
+      "count": 1,
+      "label": "知乎热门视频",
+      "ms": 910
+    },
+    "zhihu-questions": {
+      "ok": true,
+      "count": 30,
+      "label": "知乎热门话题",
+      "ms": 922
+    },
+    "zhihu-search": {
+      "ok": true,
+      "count": 30,
+      "label": "知乎热搜榜",
+      "ms": 936
     }
   }
 }
