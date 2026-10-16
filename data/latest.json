@@ -1,42 +1,42 @@
 {
-  "updatedAt": "2026-10-16T16:26:07.509Z",
+  "updatedAt": "2026-10-16T20:49:02.641Z",
   "date": "2026-10-16",
   "sources": {
     "bilibili": {
       "ok": true,
       "count": 50,
       "label": "B站热搜",
-      "ms": 507
-    },
-    "weibo-search": {
-      "ok": true,
-      "count": 51,
-      "label": "微博热搜",
-      "ms": 789
+      "ms": 439
     },
     "zhihu-search": {
       "ok": true,
       "count": 29,
       "label": "知乎热搜榜",
-      "ms": 730
-    },
-    "zhihu-questions": {
-      "ok": true,
-      "count": 29,
-      "label": "知乎热门话题",
-      "ms": 730
-    },
-    "toutiao-search": {
-      "ok": true,
-      "count": 50,
-      "label": "今日头条热搜",
-      "ms": 784
+      "ms": 445
     },
     "zhihu-video": {
       "ok": true,
       "count": 1,
       "label": "知乎热门视频",
-      "ms": 793
+      "ms": 532
+    },
+    "zhihu-questions": {
+      "ok": true,
+      "count": 29,
+      "label": "知乎热门话题",
+      "ms": 536
+    },
+    "weibo-search": {
+      "ok": true,
+      "count": 50,
+      "label": "微博热搜",
+      "ms": 791
+    },
+    "toutiao-search": {
+      "ok": true,
+      "count": 50,
+      "label": "今日头条热搜",
+      "ms": 896
     }
   }
 }
